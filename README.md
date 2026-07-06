@@ -1,6 +1,6 @@
 # Screen Switcher (Linux / COSMIC)
 
-Port a Linux del [Screen Switcher de Windows](../ScreenSwitcher-windows/): selector
+Port a Linux del [Screen Switcher de Windows](https://github.com/gastonhz/ScreenSwitcher-Windows-Native): selector
 de **perfiles de monitores** + **control de brillo DDC/CI**, como applet nativo del
 panel de **COSMIC** (Pop!_OS 24.04+). Cambia entre configuraciones de pantallas
 (encender/apagar, resolución, rotación, posición, monitor principal) con un click.
