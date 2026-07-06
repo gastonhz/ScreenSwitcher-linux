@@ -1,0 +1,19 @@
+[package]
+name = "cosmic-applet-screen-switcher"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-only"
+description = "Selector de perfiles de monitores + brillo DDC/CI para COSMIC (port Linux de Screen Switcher)"
+
+[dependencies]
+kdl = "6.5"
+ddc-hi = "0.4"
+tokio = { version = "1", features = ["sync", "rt", "time"] }
+
+[dependencies.libcosmic]
+git = "https://github.com/pop-os/libcosmic"
+default-features = false
+features = ["applet", "tokio", "wayland"]
+
+[profile.release]
+lto = "thin"

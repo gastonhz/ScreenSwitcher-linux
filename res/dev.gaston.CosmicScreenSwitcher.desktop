@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Screen Switcher
+Comment=Selector de perfiles de monitores + brillo DDC/CI
+Type=Application
+Exec=cosmic-applet-screen-switcher
+Terminal=false
+Categories=Cosmic;Iced;
+Keywords=Cosmic;Iced;ScreenSwitcher;Monitores;
+Icon=video-display-symbolic
+StartupNotify=true
+NoDisplay=true
+X-CosmicApplet=true
+X-CosmicHoverPopup=Auto

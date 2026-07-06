@@ -1,0 +1,69 @@
+// Screen Switcher (Linux/COSMIC) - perfiles de monitores
+//
+// Equivalente a profiles.psd1 de la version Windows, en formato KDL (el mismo
+// que habla `cosmic-randr`). Este archivo se lee de
+// ~/.config/screen-switcher/profiles.kdl; si no existe se usa la copia
+// embebida en el binario.
+//
+// Monitores fisicos (mapeo Windows -> Linux):
+//   GSM57C7  LG E2340     principal, centro   -> HDMI-A-1
+//   GSM5B55  LG FULL HD   secundario, derecha -> DP-2
+//   SAM0E8C  TV Samsung   izquierda           -> DP-1
+//
+// Reglas (mismas que en Windows):
+//  - width/height son SIEMPRE la resolucion sin rotar (1920x1080); la rotacion
+//    va aparte en transform (normal|rotate90|rotate180|rotate270|flipped*).
+//  - x/y: posicion absoluta del borde superior-izquierdo. Aca el layout se
+//    normaliza para que la salida mas a la izquierda quede en x=0 (Wayland no
+//    usa coordenadas negativas como Windows).
+//  - refresh en Hz (opcional; tolerancia +-0.5 Hz al elegir el modo).
+//  - primary=#true en exactamente una salida encendida (compat Xwayland).
+//  - salida apagada: nodo `off "clave"`.
+
+monitor "principal" connector="HDMI-A-1" label="Principal" ddc-model="E2340"
+monitor "secundario" connector="DP-2" label="Secundario" ddc-model="LG FULL HD"
+monitor "tv" connector="DP-1" label="TV" ddc-model="SAMSUNG" tv=#true
+
+// -- Los 7 perfiles (mismo orden y etiquetas que la UI de Windows) ----------
+
+profile "escritoriodoble-vertical" label="Dos pantallas - vertical" {
+    output "principal" x=0 y=0 width=1920 height=1080 refresh=60 transform="normal" primary=#true
+    output "secundario" x=1920 y=0 width=1920 height=1080 refresh=75 transform="rotate90"
+    off "tv"
+}
+
+profile "escritoriodoble-horizontal" label="Dos pantallas - horizontal" {
+    output "principal" x=0 y=0 width=1920 height=1080 refresh=60 transform="normal" primary=#true
+    output "secundario" x=1920 y=0 width=1920 height=1080 refresh=75 transform="normal"
+    off "tv"
+}
+
+profile "tres-pantallas-horizontal" label="Tres pantallas - horizontal" {
+    output "tv" x=0 y=0 width=1920 height=1080 refresh=60 transform="normal"
+    output "principal" x=1920 y=0 width=1920 height=1080 refresh=60 transform="normal" primary=#true
+    output "secundario" x=3840 y=0 width=1920 height=1080 refresh=75 transform="normal"
+}
+
+profile "escritoriodoble-y-tv" label="Dos pantallas + TV (aux)" {
+    output "tv" x=0 y=0 width=1920 height=1080 refresh=60 transform="normal"
+    output "principal" x=1920 y=0 width=1920 height=1080 refresh=60 transform="normal" primary=#true
+    output "secundario" x=3840 y=0 width=1920 height=1080 refresh=75 transform="rotate90"
+}
+
+profile "solo-tv" label="Solo TV" {
+    output "tv" x=0 y=0 width=1920 height=1080 refresh=60 transform="normal" primary=#true
+    off "principal"
+    off "secundario"
+}
+
+profile "tv-principal-y-display10" label="TV principal + monitor (juegos)" {
+    output "tv" x=0 y=0 width=1920 height=1080 refresh=60 transform="normal" primary=#true
+    output "secundario" x=1920 y=0 width=1920 height=1080 refresh=75 transform="rotate90"
+    off "principal"
+}
+
+profile "solo-principal" label="Solo pantalla principal" {
+    output "principal" x=0 y=0 width=1920 height=1080 refresh=60 transform="normal" primary=#true
+    off "secundario"
+    off "tv"
+}
