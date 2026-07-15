@@ -56,7 +56,7 @@ pub enum AppMsg {
     StateRead(Result<Vec<OutputState>, String>),
     SetBrightness(String, u16),
     DdcReady(Vec<DdcInfo>, Sender<EventToSub>),
-    DdcUpdated(String, u16),
+    DdcRescanned(Vec<DdcInfo>),
 }
 
 fn now_ms() -> u128 {
@@ -100,6 +100,23 @@ impl AppState {
             info.model.clone()
         };
         (fallback, usize::MAX)
+    }
+
+    fn build_sliders(&self, infos: &[DdcInfo]) -> Vec<SliderState> {
+        let mut sliders: Vec<SliderState> = infos
+            .iter()
+            .map(|info| {
+                let (label, rank) = self.slider_meta(info);
+                SliderState {
+                    key: info.key.clone(),
+                    label,
+                    rank,
+                    percent: info.percent,
+                }
+            })
+            .collect();
+        sliders.sort_by(|a, b| (a.rank, &a.label).cmp(&(b.rank, &b.label)));
+        sliders
     }
 
     fn toggle_popup(&mut self) -> Task<AppMsg> {
@@ -232,26 +249,11 @@ impl cosmic::Application for AppState {
                 self.send_ddc(EventToSub::Set(key, pct));
             }
             AppMsg::DdcReady(infos, sender) => {
-                let mut sliders: Vec<SliderState> = infos
-                    .iter()
-                    .map(|info| {
-                        let (label, rank) = self.slider_meta(info);
-                        SliderState {
-                            key: info.key.clone(),
-                            label,
-                            rank,
-                            percent: info.percent,
-                        }
-                    })
-                    .collect();
-                sliders.sort_by(|a, b| (a.rank, &a.label).cmp(&(b.rank, &b.label)));
-                self.sliders = sliders;
+                self.sliders = self.build_sliders(&infos);
                 self.sender = Some(sender);
             }
-            AppMsg::DdcUpdated(key, pct) => {
-                if let Some(s) = self.sliders.iter_mut().find(|s| s.key == key) {
-                    s.percent = pct;
-                }
+            AppMsg::DdcRescanned(infos) => {
+                self.sliders = self.build_sliders(&infos);
             }
         }
         Task::none()
