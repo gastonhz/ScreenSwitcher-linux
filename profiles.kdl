@@ -17,37 +17,41 @@
 //    normaliza para que la salida mas a la izquierda quede en x=0 (Wayland no
 //    usa coordenadas negativas como Windows).
 //  - refresh en Hz (opcional; tolerancia +-0.5 Hz al elegir el modo).
+//  - refresh-want en Hz (opcional; lo pone y lo saca retune-profiles.py): el
+//    refresco que se quiere de verdad, anotado cuando hubo que bajar `refresh`
+//    porque ese modo no figuraba en la lista. Si el modo reaparece, la
+//    siguiente corrida del script restaura `refresh` y borra este marcador.
 //  - primary=#true en exactamente una salida encendida (compat Xwayland).
 //  - salida apagada: nodo `off "clave"`.
 
-monitor "principal" connector="HDMI-A-1" label="Principal" ddc-model="E2340"
-monitor "secundario" connector="DP-2" label="Secundario" ddc-model="LG FULL HD"
-monitor "tv" connector="DP-1" label="TV" ddc-model="SAMSUNG" tv=#true
+monitor "principal" connector="HDMI-A-1" label="Principal" ddc-model="E2340" match-make="LG Electronics" match-model="E2340"
+monitor "secundario" connector="DP-2" label="Secundario" ddc-model="LG FULL HD" match-make="LG Electronics" match-model="LG FULL HD" match-serial="0x00076DE6"
+monitor "tv" connector="DP-1" label="TV" ddc-model="SAMSUNG" tv=#true match-make="Samsung Electric Company" match-model="SAMSUNG"
 
 // -- Los 7 perfiles (mismo orden y etiquetas que la UI de Windows) ----------
 
 profile "escritoriodoble-vertical" label="Dos pantallas - vertical" {
     output "principal" x=0 y=0 width=1920 height=1080 refresh=60 transform="normal" primary=#true
-    output "secundario" x=1920 y=0 width=1920 height=1080 refresh=75 transform="rotate90"
+    output "secundario" x=1920 y=0 width=1920 height=1080 refresh=60 refresh-want=75 transform="rotate90"
     off "tv"
 }
 
 profile "escritoriodoble-horizontal" label="Dos pantallas - horizontal" {
     output "principal" x=0 y=0 width=1920 height=1080 refresh=60 transform="normal" primary=#true
-    output "secundario" x=1920 y=0 width=1920 height=1080 refresh=75 transform="normal"
+    output "secundario" x=1920 y=0 width=1920 height=1080 refresh=60 refresh-want=75 transform="normal"
     off "tv"
 }
 
 profile "tres-pantallas-horizontal" label="Tres pantallas - horizontal" {
     output "tv" x=0 y=0 width=1920 height=1080 refresh=60 transform="normal"
     output "principal" x=1920 y=0 width=1920 height=1080 refresh=60 transform="normal" primary=#true
-    output "secundario" x=3840 y=0 width=1920 height=1080 refresh=75 transform="normal"
+    output "secundario" x=3840 y=0 width=1920 height=1080 refresh=60 refresh-want=75 transform="normal"
 }
 
 profile "escritoriodoble-y-tv" label="Dos pantallas + TV (aux)" {
     output "tv" x=0 y=0 width=1920 height=1080 refresh=60 transform="normal"
     output "principal" x=1920 y=0 width=1920 height=1080 refresh=60 transform="normal" primary=#true
-    output "secundario" x=3840 y=0 width=1920 height=1080 refresh=75 transform="rotate90"
+    output "secundario" x=3840 y=0 width=1920 height=1080 refresh=60 refresh-want=75 transform="rotate90"
 }
 
 profile "solo-tv" label="Solo TV" {
@@ -58,7 +62,7 @@ profile "solo-tv" label="Solo TV" {
 
 profile "tv-principal-y-display10" label="TV principal + monitor (juegos)" {
     output "tv" x=0 y=0 width=1920 height=1080 refresh=60 transform="normal" primary=#true
-    output "secundario" x=1920 y=0 width=1920 height=1080 refresh=75 transform="rotate90"
+    output "secundario" x=1920 y=0 width=1920 height=1080 refresh=60 refresh-want=75 transform="rotate90"
     off "principal"
 }
 

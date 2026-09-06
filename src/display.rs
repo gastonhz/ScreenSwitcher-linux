@@ -160,7 +160,11 @@ pub fn detect_active(profiles: &[Profile], state: &[OutputState]) -> Option<Stri
     None
 }
 
-pub fn apply(profile: &Profile) -> Result<(), String> {
+/// Aplica el perfil. `Ok` trae los avisos de lo que hubo que ajustar sobre la
+/// marcha (p.ej. un refresco que ya no existe): el perfil quedo aplicado, pero
+/// no exactamente como estaba declarado.
+pub fn apply(profile: &Profile) -> Result<Vec<String>, String> {
+    let mut warnings = Vec::new();
     let state = read_state()?;
     let on_specs: Vec<_> = profile.outputs.iter().filter(|s| s.enabled).collect();
     if on_specs.is_empty() {
@@ -195,7 +199,7 @@ pub fn apply(profile: &Profile) -> Result<(), String> {
         let h = spec.height.to_string();
         let x = spec.x.to_string();
         let y = spec.y.to_string();
-        let mut a: Vec<&str> = vec![
+        let base: Vec<&str> = vec![
             "mode",
             &spec.connector,
             &w,
@@ -207,13 +211,29 @@ pub fn apply(profile: &Profile) -> Result<(), String> {
             "--transform",
             &spec.transform,
         ];
-        let refresh_s;
-        if let Some(hz) = spec.refresh {
-            refresh_s = format!("{hz}");
-            a.push("--refresh");
-            a.push(&refresh_s);
+        let Some(hz) = spec.refresh else {
+            randr(&base)?;
+            continue;
+        };
+        let refresh_s = format!("{hz}");
+        let mut with_refresh = base.clone();
+        with_refresh.push("--refresh");
+        with_refresh.push(&refresh_s);
+
+        // El refresco declarado puede haber desaparecido de la lista de modos
+        // (pasa al cambiar de driver o de adaptador) y cosmic-randr responde
+        // ModeNotFound. Eso no justifica abortar el apply: si lo hicieramos,
+        // las salidas ya procesadas quedarian en su sitio y el resto con la
+        // geometria vieja, o sea el layout partido a la mitad. Reintentamos
+        // sin --refresh, que deja elegir el modo preferido de esa resolucion,
+        // y seguimos. El aviso vuelve al llamador para mostrarlo en la UI.
+        if randr(&with_refresh).is_err() {
+            randr(&base)?;
+            warnings.push(format!(
+                "{}: {hz} Hz ya no esta disponible, use el modo preferido de {}x{}",
+                spec.connector, spec.width, spec.height
+            ));
         }
-        randr(&a)?;
     }
 
     // Fase 3: apagar lo que sobre.
@@ -243,5 +263,5 @@ pub fn apply(profile: &Profile) -> Result<(), String> {
         }
     }
 
-    Ok(())
+    Ok(warnings)
 }

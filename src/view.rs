@@ -175,6 +175,7 @@ impl AppState {
             },
             Status::Applying(l) => format!("Aplicando '{l}'..."),
             Status::Done(l) => format!("OK - '{l}' aplicado."),
+            Status::Warn(l, w) => format!("'{l}' aplicado, con ajustes: {w}"),
             Status::Error(e) => format!("Error: {e}"),
         };
         text(msg).size(12).into()

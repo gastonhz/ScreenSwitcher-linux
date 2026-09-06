@@ -32,6 +32,8 @@ pub enum Status {
     Idle,
     Applying(String),
     Done(String),
+    /// Perfil aplicado, pero con algun ajuste sobre la marcha (label, aviso).
+    Warn(String, String),
     Error(String),
 }
 
@@ -52,7 +54,7 @@ pub enum AppMsg {
     TogglePopup,
     ClosePopup,
     Apply(String),
-    Applied(String, Result<(), String>),
+    Applied(String, Result<Vec<String>, String>),
     StateRead(Result<Vec<OutputState>, String>),
     SetBrightness(String, u16),
     DdcReady(Vec<DdcInfo>, Sender<EventToSub>),
@@ -225,7 +227,8 @@ impl cosmic::Application for AppState {
             AppMsg::Applied(label, res) => {
                 self.applying = false;
                 self.status = match res {
-                    Ok(()) => Status::Done(label),
+                    Ok(w) if w.is_empty() => Status::Done(label),
+                    Ok(w) => Status::Warn(label, w.join("; ")),
                     Err(e) => Status::Error(e),
                 };
                 // Cambiar de perfil puede prender/apagar monitores DDC/CI.
